@@ -1,6 +1,5 @@
 import * as THREE from './../../vendor/three.module.js';
 import * as Control from './../../vendor/OrbitControls.js';
-import * as Mouse from './mouse.js'
 
 let renderer;
 let scene;
@@ -70,8 +69,9 @@ function animate() {
 	requestAnimationFrame(animate);
 }
 
-function getClickPosition() {
-    raycaster.setFromCamera(Mouse.position, camera);
+function getClickPosition(_x, _y) {
+    const mousePosition = new THREE.Vector2(_x, _y);
+    raycaster.setFromCamera(mousePosition, camera);
     var intersects = raycaster.intersectObject(groundMesh);
 	for (let i = 0; i < intersects.length; i++) {
         return intersects[i].point;

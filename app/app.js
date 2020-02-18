@@ -18,7 +18,7 @@ const app = {
 };
 
 function onMouseMove(_x, _y) {
-	const point = Core.getClickPosition();
+	const point = Core.getClickPosition(_x, _y);
     if (!point) return;
     const foundedTile = Grid.getTile(point.x, point.z);
     if (!foundedTile) return;
