@@ -132,15 +132,15 @@ class House {
 		this.showRoof(true);
 
 		const tests = [
-			[['-1-10-1-1'], this._roofSingle, 0], 
-			[['0100-1', '0101-1', '1100-1', '-110-1-1'], this._roofSlope, Math.PI / -2], 
-			[['0-1001', '0-1011', '1-1001', '-1-10-11'], this._roofSlope, Math.PI / 2], 
-			[['-10010', '-10011', '-11010', '-1-101-1'], this._roofSlope, Math.PI], 
-			[['100-10', '110-10', '100-11', '1-10-1-1'], this._roofSlope, 0], 
-			[['110-1-1', '000-1-1'], this._roofCorner, 0], 
-			[['-1-1011', '-1-1000'], this._roofCorner, Math.PI], 
-			[['-1101-1', '-1000-1'], this._roofCorner, Math.PI / -2], 
-			[['1-10-11', '0-10-10'], this._roofCorner, Math.PI / 2], 
+			[['-1-10-1-1'], 0, 'alone'], 
+			[['0100-1', '0101-1', '1100-1', '-110-1-1'], Math.PI / -2, 'slope'], 
+			[['0-1001', '0-1011', '1-1001', '-1-10-11'], Math.PI / 2, 'slope'], 
+			[['-10010', '-10011', '-11010', '-1-101-1'], Math.PI, 'slope'], 
+			[['100-10', '110-10', '100-11', '1-10-1-1'], 0, 'slope'], 
+			[['110-1-1', '000-1-1'], 0, 'corner'], 
+			[['-1-1011', '-1-1000'], Math.PI, 'corner'], 
+			[['-1101-1', '-1000-1'], Math.PI / -2, 'corner'], 
+			[['1-10-11', '0-10-10'], Math.PI / 2, 'corner'], 
 		];
 		for (let i = 0; i < tests.length; i ++) {
 			const test = tests[i];
@@ -153,28 +153,21 @@ class House {
 		return false;
 	}
 
-	_roofSingle(_angle) {
-		this.roofMesh.geometry = getRoofGeometry('alone');
-		this.roofMesh.rotation.y = _angle;
-	}
-	_roofSlope(_angle) {
-		this.roofMesh.geometry = getRoofGeometry('slope');
-		this.roofMesh.rotation.y = _angle;
-	}
-	_roofCorner(_angle) {
-		this.roofMesh.geometry = getRoofGeometry('corner');
-		this.roofMesh.rotation.y = _angle;
-	}
-
-	_checkRoof(_siblings, _patterns, _callback, _angle) {
+	_checkRoof(_siblings, _patterns, _angle, _roofType) {
 		for (let i = 0; i < _patterns.length; i ++) {
 			if (!this._checkSiblingPattern(_siblings, _patterns[i])) continue;
 			this.roofMesh.geometry.dispose();
-			_callback.call(this, _angle);
-			// console.log('', _patterns[i])
+			this.updateRoofGeometry(_roofType, _angle);
 			return true;
 		}
 		return false;
+	}
+
+	updateRoofGeometry(_roofType, _angle) {
+		if (this.roofType == _roofType) return;
+		this.roofType = _roofType;
+		this.roofMesh.geometry = getRoofGeometry(this.roofType);
+		this.roofMesh.rotation.y = _angle;
 	}
 
 	_checkSiblingPattern(_siblings, _pattern) {
