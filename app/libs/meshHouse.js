@@ -5,8 +5,6 @@ const textWall = new THREE.TextureLoader().load('./assets/wall.jpg');
 textWall.wrapS = textWall.wrapT = THREE.RepeatWrapping;
 const textRoof = new THREE.TextureLoader().load('./assets/roof.jpg');
 textRoof.wrapS = textRoof.wrapT = THREE.RepeatWrapping;
-const wallMaterial = new THREE.MeshPhysicalMaterial({color: 0xffffff, clearcoat:0, map:textWall});
-const roofMaterial = new THREE.MeshPhysicalMaterial({color: 0xffffff, clearcoat:0, map:textRoof});
 const blocHeight = 10;
 
 function getRoofMaterial() {
@@ -17,18 +15,76 @@ function getWallMaterial() {
 	return new THREE.MeshPhysicalMaterial({color: 0xffffff, clearcoat:0, map:textWall});
 }
 
+function getRoofGeometry(_model) {
+	if (_model == 'alone') {
+		const roofShape = [
+			[-0.8, -1], 
+			[0.8, -1], 
+			[1, -0.8], 
+			[1, 0.8], 
+			[0.8, 1], 
+			[-0.8, 1], 
+			[-1, 0.8], 
+			[-1, -0.8], 
+		];
+		const roofPath = [
+			[0.5, 0.2], 
+			[1.05, -0.08], 
+			[1.1, -0.03], 
+			[0.5, 0.3], 
+			[0.2, 0.5], 
+			[0.01, 0.55], 
+		];
+		return buildBoxGeometry(roofShape, roofPath, 6);
+	}
+	if (_model == 'slope') {
+		return buildRoofGeometrySlope(5);
+	}
+	if (_model == 'corner') {
+		return buildRoofGeometryCorner(5);
+	}
+}
+
+function getWallGeometry(_floor) {
+	const wallsShape = [
+		[-1, -1], 
+		[1, -1], 
+		[1, 1], 
+		[-1, 1], 
+	];
+	const wallsPath = [
+		[0.01, 0], 
+		[0.54, 0], 
+		[0.54, 0.2], 
+		[0.5, 0.25], 
+		[0.5, 0.9], 
+		[0.55, 0.9], 
+		[0.55, 1], 
+		[0.01, 1], 
+	];
+	if (_floor == 0) { 
+		return buildBoxGeometry(wallsShape, wallsPath);
+	}
+	const wallsPathB = [
+		[0.01, 0], 
+		[0.5, 0], 
+		[0.5, 0.95], 
+		[0.55, 0.95], 
+		[0.55, 1], 
+		[0.01, 1], 
+	];
+	return buildBoxGeometry(wallsShape, wallsPathB);
+}
+
 class House {
 	constructor(_position, _floor) {
 		this.floor = _floor;
-		this.roofMesh = new THREE.Mesh(roofGeometry, getRoofMaterial());
-		// this.roofMesh.position.set(_position[0], (this.floor + 1) * blocHeight, _position[1])
+		this.roofMesh = new THREE.Mesh(getRoofGeometry('alone'), getRoofMaterial());
 		this.roofMesh.castShadow = true;
     	this.roofMesh.receiveShadow = true;
 		Core.scene.add(this.roofMesh);
-		let myWallGeometry = wallGeometry;
-		if (this.floor > 0) myWallGeometry = wallGeometryB;
+		let myWallGeometry = getWallGeometry(this.floor);
 		this.mesh = new THREE.Mesh(myWallGeometry, getWallMaterial());
-		// this.mesh.position.set(_position[0], this.floor * blocHeight, _position[1])
 		this.mesh.castShadow = true;
 		this.mesh.receiveShadow = true;
 		this.setPosition(_position[0], _position[1]);
@@ -88,21 +144,22 @@ class House {
 	}
 
 	_roofSingle(_angle) {
-		this.roofMesh.geometry = roofGeometry;
+		this.roofMesh.geometry = getRoofGeometry('alone');
 		this.roofMesh.rotation.y = _angle;
 	}
 	_roofSlope(_angle) {
-		this.roofMesh.geometry = roofGeometryB;
+		this.roofMesh.geometry = getRoofGeometry('slope');
 		this.roofMesh.rotation.y = _angle;
 	}
 	_roofCorner(_angle) {
-		this.roofMesh.geometry = roofGeometryC;
+		this.roofMesh.geometry = getRoofGeometry('corner');
 		this.roofMesh.rotation.y = _angle;
 	}
 
 	_checkRoof(_siblings, _patterns, _callback, _angle) {
 		for (let i = 0; i < _patterns.length; i ++) {
 			if (!this._checkSiblingPattern(_siblings, _patterns[i])) continue;
+			this.roofMesh.geometry.dispose();
 			_callback.call(this, _angle);
 			// console.log('', _patterns[i])
 			return true;
@@ -129,7 +186,7 @@ class House {
 }
 
 
-function buildRoofGeometryC(_size) {
+function buildRoofGeometryCorner(_size) {
 	const geometry = new THREE.Geometry();
 	const baseSize = 1.0;
 	const basePos = [
@@ -168,7 +225,7 @@ function buildRoofGeometryC(_size) {
 	return geometry;
 }
 
-function buildRoofGeometryB(_size) {
+function buildRoofGeometrySlope(_size) {
 	const geometry = new THREE.Geometry();
 	const baseSize = 1.0;
 	const basePos = [
@@ -218,70 +275,7 @@ function buildRoofGeometryB(_size) {
 	return geometry;
 }
 
-const wallsShape = [
-	[-1, -1], 
-	[1, -1], 
-	[1, 1], 
-	[-1, 1], 
-];
-const wallsPath = [
-	[0.01, 0], 
-	[0.54, 0], 
-	[0.54, 0.2], 
-	[0.5, 0.25], 
-	[0.5, 0.9], 
-	[0.55, 0.9], 
-	[0.55, 1], 
-	[0.01, 1], 
-];
-const wallGeometry = buildBoxGeometry(wallsShape, wallsPath);
-
-const wallsPathB = [
-	[0.01, 0], 
-	[0.5, 0], 
-	[0.5, 0.95], 
-	[0.55, 0.95], 
-	[0.55, 1], 
-	[0.01, 1], 
-];
-const wallGeometryB = buildBoxGeometry(wallsShape, wallsPathB);
-
-const roofShape = [
-	[-0.8, -1], 
-	[0.8, -1], 
-	[1, -0.8], 
-	[1, 0.8], 
-	[0.8, 1], 
-	[-0.8, 1], 
-	[-1, 0.8], 
-	[-1, -0.8], 
-];
-const roofPath = [
-	[0.5, 0.2], 
-	[1.05, -0.08], 
-	[1.1, -0.03], 
-	[0.5, 0.3], 
-	[0.2, 0.5], 
-	[0.01, 0.55], 
-];
-const roofUvX = [
-	[0.0, 0.9], 
-	[0.9, 1], 
-	[0.0, 0.9], 
-	[0.9, 1], 
-	[0.0, 0.9], 
-	[0.9, 1], 
-	[0.0, 0.9], 
-	[0.9, 1], 
-];
-const roofGeometry = buildBoxGeometry(roofShape, roofPath, 6, roofUvX);
-const roofGeometryB = buildRoofGeometryB(5);
-const roofGeometryC = buildRoofGeometryC(5);
-
-
-
-
-function buildBoxGeometry(_shape, _path, _scaleW = 10, _uvX) {
+function buildBoxGeometry(_shape, _path, _scaleW = 10) {
 	const geometry = new THREE.Geometry();
 	const _scaleH = 10;
 	_path.forEach(step => {
@@ -310,47 +304,23 @@ function buildBoxGeometry(_shape, _path, _scaleW = 10, _uvX) {
 			geometry.faces.push(new THREE.Face3(siblingIndex, topIndex, siblingTopIndex));
 		}
 	}
-
-	// if (_uvX) {
-	if (false) {
-		for (let pathStep = 0; pathStep < _path.length - 1; pathStep ++) {
-			const curUvY = _path[pathStep][1];
-			const nextUvY = _path[pathStep + 1][1];
-			_uvX.forEach(uvX => {
-				geometry.faceVertexUvs[0].push(
-					[new THREE.Vector2(uvX[0], curUvY), new THREE.Vector2(uvX[0], nextUvY), new THREE.Vector2(uvX[1], curUvY)], 
-					[new THREE.Vector2(uvX[1], curUvY), new THREE.Vector2(uvX[0], nextUvY), new THREE.Vector2(uvX[1], nextUvY)], 
-				);
-			});
-		}
-	} else {
-		for (let pathStep = 0; pathStep < _path.length - 1; pathStep ++) {
-			const curUvY = _path[pathStep][1];
-			const nextUvY = _path[pathStep + 1][1];
-			const posLoop = [..._shape];
-			posLoop.push(_shape[0]);
-			for (let i = 0; i < posLoop.length - 1; i ++) {
-				const curPos = posLoop[i];
-				const nextPos = posLoop[i + 1];
-				let curAngle = (Math.atan2(curPos[1], curPos[0]) + Math.PI) / 2 / Math.PI;
-				let nextAngle = (Math.atan2(nextPos[1], nextPos[0]) + Math.PI) / 2 / Math.PI;
-				const vectA = new THREE.Vector3(curPos[0], curPos[1], 1);
-				const vectB = new THREE.Vector3(nextPos[0], nextPos[1], 1);
-				nextAngle = curAngle + vectA.angleTo(vectB);
-				geometry.faceVertexUvs[0].push(
-					[new THREE.Vector2(curAngle, curUvY), new THREE.Vector2(curAngle, nextUvY), new THREE.Vector2(nextAngle, curUvY)], 
-					[new THREE.Vector2(nextAngle, curUvY), new THREE.Vector2(curAngle, nextUvY), new THREE.Vector2(nextAngle, nextUvY)], 
-				);
-			}
-			
-			/*
-			_shape.forEach(pos => {
-				geometry.faceVertexUvs[0].push(
-					[new THREE.Vector2(0, curUvY), new THREE.Vector2(0, nextUvY), new THREE.Vector2(1, curUvY)], 
-					[new THREE.Vector2(1, curUvY), new THREE.Vector2(0, nextUvY), new THREE.Vector2(1, nextUvY)], 
-				);
-			});
-			*/
+	for (let pathStep = 0; pathStep < _path.length - 1; pathStep ++) {
+		const curUvY = _path[pathStep][1];
+		const nextUvY = _path[pathStep + 1][1];
+		const posLoop = [..._shape];
+		posLoop.push(_shape[0]);
+		for (let i = 0; i < posLoop.length - 1; i ++) {
+			const curPos = posLoop[i];
+			const nextPos = posLoop[i + 1];
+			let curAngle = (Math.atan2(curPos[1], curPos[0]) + Math.PI) / 2 / Math.PI;
+			let nextAngle = (Math.atan2(nextPos[1], nextPos[0]) + Math.PI) / 2 / Math.PI;
+			const vectA = new THREE.Vector3(curPos[0], curPos[1], 1);
+			const vectB = new THREE.Vector3(nextPos[0], nextPos[1], 1);
+			nextAngle = curAngle + vectA.angleTo(vectB);
+			geometry.faceVertexUvs[0].push(
+				[new THREE.Vector2(curAngle, curUvY), new THREE.Vector2(curAngle, nextUvY), new THREE.Vector2(nextAngle, curUvY)], 
+				[new THREE.Vector2(nextAngle, curUvY), new THREE.Vector2(curAngle, nextUvY), new THREE.Vector2(nextAngle, nextUvY)], 
+			);
 		}
 	}
 
