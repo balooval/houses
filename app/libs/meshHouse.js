@@ -45,6 +45,16 @@ function getRoofGeometry(_model) {
 	}
 }
 
+function randomizeGeometry(_geometry) {
+	const factor = 1;
+	_geometry.vertices.forEach(vertice => {
+		vertice.x += (Math.random() - 0.5) * factor;
+		vertice.z += (Math.random() - 0.5) * factor;
+	});
+	_geometry.verticesNeedUpdate = true;
+	return _geometry;
+}
+
 function getWallGeometry(_floor) {
 	const wallsShape = [
 		[-1, -1], 
@@ -222,7 +232,7 @@ function buildRoofGeometryCorner(_size) {
 	geometry.computeBoundingSphere();
 	geometry.verticesNeedUpdate = true;
 	geometry.normalsNeedUpdate = true;
-	return geometry;
+	return randomizeGeometry(geometry);
 }
 
 function buildRoofGeometrySlope(_size) {
@@ -272,7 +282,7 @@ function buildRoofGeometrySlope(_size) {
 	geometry.computeBoundingSphere();
 	geometry.verticesNeedUpdate = true;
 	geometry.normalsNeedUpdate = true;
-	return geometry;
+	return randomizeGeometry(geometry);
 }
 
 function buildBoxGeometry(_shape, _path, _scaleW = 10) {
@@ -328,7 +338,7 @@ function buildBoxGeometry(_shape, _path, _scaleW = 10) {
 	geometry.computeBoundingSphere();
 	geometry.verticesNeedUpdate = true;
 	geometry.normalsNeedUpdate = true;
-	return geometry;
+	return randomizeGeometry(geometry);
 }
 
 export {House};
