@@ -21,23 +21,6 @@ function init() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-
-
-    /*
-    const loader = new THREE.CubeTextureLoader();
-    const texture = loader.load([
-      'assets/posx.jpg',
-      'assets/negx.jpg',
-      'assets/posy.jpg',
-      'assets/negy.jpg',
-      'assets/posz.jpg',
-      'assets/negz.jpg',
-    ]);
-    scene.background = texture;
-    */
-
-    
-
     control = new Control.OrbitControls(camera, renderer.domElement);
 
     var backLight = new THREE.PointLight(0xffaa66, 0.3);
@@ -46,7 +29,6 @@ function init() {
 
     var geometry = new THREE.PlaneGeometry(100, 100, 20, 20);
     var material = new THREE.MeshPhysicalMaterial({color: 0x909090, clearcoat:0});
-    // var material = new THREE.ShadowMaterial();
     
     groundMesh = new THREE.Mesh(geometry, material);
     groundMesh.position.y = 0;
@@ -63,28 +45,24 @@ function init() {
     scene.add(ambiant);
 
     var light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.shadow.mapSize.width = 512;  // default
-    light.shadow.mapSize.height = 512; // default
-    light.shadow.camera.near = 0.5;    // default
-    light.shadow.camera.far = 200;     // default
+    light.shadow.mapSize.width = 512;
+    light.shadow.mapSize.height = 512;
+    light.shadow.camera.near = 0.5;
+    light.shadow.camera.far = 200;
     light.shadow.camera.left = -50;
     light.shadow.camera.right = 50;
     light.shadow.camera.top = 50;
     light.shadow.camera.bottom = -50;
     light.target = groundMesh;
 
-    // var light = new THREE.PointLight(0xffffff, 1);
     light.position.set(50, 100, 10);
     light.castShadow = true;
     scene.add(light);
-
     // var helper = new THREE.CameraHelper( light.shadow.camera );
     // scene.add( helper );
 
     animate();
 }
-
-
 
 function animate() {
     control.update();
