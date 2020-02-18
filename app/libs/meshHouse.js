@@ -89,6 +89,8 @@ function getWallGeometry(_floor) {
 class House {
 	constructor(_position, _floor) {
 		this.floor = _floor;
+		this.roofColor = new THREE.Color(Math.random() * 0.2, Math.random() * 0.1, Math.random() * 0.05);
+		this.roofType = 'alone';
 		this.roofMesh = new THREE.Mesh(getRoofGeometry('alone'), getRoofMaterial());
 		this.roofMesh.castShadow = true;
     	this.roofMesh.receiveShadow = true;
@@ -107,13 +109,14 @@ class House {
 	}
 
 	highlight(_state) {
-		let color = 0x000000;
+		let roofColor = this.roofColor;
+		let wallColor = 0x000000;
 		if (_state) {
-			color = 0x006600;
+			roofColor = new THREE.Color(0x006600);
+			wallColor = 0x006600;
 		}
-		const emissive = new THREE.Color(color)
-		this.mesh.material.emissive = emissive;
-		this.roofMesh.material.emissive = emissive;
+		this.roofMesh.material.emissive = roofColor;
+		this.mesh.material.emissive = new THREE.Color(wallColor);
 	}
 
 	showRoof(_state) {
